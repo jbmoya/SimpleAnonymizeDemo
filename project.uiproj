@@ -1,0 +1,6 @@
+{
+  "Name": "SimpleAnonymizer",
+  "ProjectType": "Process",
+  "Description": "Uipath and Anonymeizer Demo",
+  "MainFile": "Main.xaml"
+}
