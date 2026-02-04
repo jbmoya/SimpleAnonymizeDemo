@@ -135,19 +135,26 @@
       <Variable x:TypeArguments="x:String" Name="analyzeUrl" />
       <Variable x:TypeArguments="x:String" Name="text" />
       <Variable x:TypeArguments="x:Int32" Default="1" Name="nextIdx" />
+      <Variable x:TypeArguments="x:String" Name="anonymizedText" />
     </Sequence.Variables>
     <sap:WorkflowViewStateService.ViewState>
       <scg:Dictionary x:TypeArguments="x:String, x:Object">
         <x:Boolean x:Key="IsExpanded">True</x:Boolean>
       </scg:Dictionary>
     </sap:WorkflowViewStateService.ViewState>
-    <Assign DisplayName="Assign InputText to variable" sap:VirtualizedContainerService.HintSize="450,175" sap2010:WorkflowViewState.IdRef="Assign_1">
+    <Assign DisplayName="Assign InputText to variable" sap:VirtualizedContainerService.HintSize="450,57" sap2010:WorkflowViewState.IdRef="Assign_1">
       <Assign.To>
         <OutArgument x:TypeArguments="x:String">[text]</OutArgument>
       </Assign.To>
       <Assign.Value>
         <InArgument x:TypeArguments="x:String">["Hola, Marina Bargalló y Jordi Bargalló con NIF 44017895N e IP 192.168.1.1."]</InArgument>
       </Assign.Value>
+      <sap:WorkflowViewStateService.ViewState>
+        <scg:Dictionary x:TypeArguments="x:String, x:Object">
+          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+          <x:Boolean x:Key="IsPinned">False</x:Boolean>
+        </scg:Dictionary>
+      </sap:WorkflowViewStateService.ViewState>
     </Assign>
     <ui:LogMessage DisplayName="Log the original text" sap:VirtualizedContainerService.HintSize="450,57" sap2010:WorkflowViewState.IdRef="LogMessage_5" Level="Trace" Message="[&quot;Texto original: &quot; &amp; text]">
       <sap:WorkflowViewStateService.ViewState>
@@ -395,7 +402,7 @@
         </sap:WorkflowViewStateService.ViewState>
       </ui:ForEach>
     </Sequence>
-    <Sequence DisplayName="Show dictionaries" sap:VirtualizedContainerService.HintSize="450,57" sap2010:WorkflowViewState.IdRef="Sequence_8">
+    <Sequence DisplayName="Show dictionaries of analysis" sap:VirtualizedContainerService.HintSize="450,57" sap2010:WorkflowViewState.IdRef="Sequence_8">
       <sap:WorkflowViewStateService.ViewState>
         <scg:Dictionary x:TypeArguments="x:String, x:Object">
           <x:Boolean x:Key="IsExpanded">False</x:Boolean>
@@ -460,10 +467,7 @@
         </sap:WorkflowViewStateService.ViewState>
       </ui:ForEach>
     </Sequence>
-    <Sequence DisplayName="Anonymize text by replacing sensitive information" sap:VirtualizedContainerService.HintSize="450,48" sap2010:WorkflowViewState.IdRef="Sequence_9">
-      <Sequence.Variables>
-        <Variable x:TypeArguments="x:String" Name="anonymizedText" />
-      </Sequence.Variables>
+    <Sequence DisplayName="Anonymize text by replacing sensitive information" sap:VirtualizedContainerService.HintSize="450,57" sap2010:WorkflowViewState.IdRef="Sequence_9">
       <sap:WorkflowViewStateService.ViewState>
         <scg:Dictionary x:TypeArguments="x:String, x:Object">
           <x:Boolean x:Key="IsExpanded">False</x:Boolean>
@@ -548,6 +552,85 @@
         </sap:WorkflowViewStateService.ViewState>
       </ui:ForEach>
       <ui:LogMessage DisplayName="Logs the anonymized text" sap:VirtualizedContainerService.HintSize="416,166" sap2010:WorkflowViewState.IdRef="LogMessage_6" Message="[&quot;Texto anonimizado: &quot; &amp; anonymizedText]" />
+    </Sequence>
+    <Sequence DisplayName="DeAnonymize Restore text by replacing keys with values" sap:VirtualizedContainerService.HintSize="450,48" sap2010:WorkflowViewState.IdRef="Sequence_11">
+      <Sequence.Variables>
+        <Variable x:TypeArguments="scg:List(x:String)" Name="orderedKeys" />
+        <Variable x:TypeArguments="x:String" Name="restoredtext" />
+      </Sequence.Variables>
+      <sap:WorkflowViewStateService.ViewState>
+        <scg:Dictionary x:TypeArguments="x:String, x:Object">
+          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+          <x:Boolean x:Key="IsPinned">False</x:Boolean>
+        </scg:Dictionary>
+      </sap:WorkflowViewStateService.ViewState>
+      <Assign DisplayName="Assign anonymized text to restored text" sap:VirtualizedContainerService.HintSize="416,175" sap2010:WorkflowViewState.IdRef="Assign_30">
+        <Assign.To>
+          <OutArgument x:TypeArguments="x:String">[restoredtext]</OutArgument>
+        </Assign.To>
+        <Assign.Value>
+          <InArgument x:TypeArguments="x:String">[anonymizedText]</InArgument>
+        </Assign.Value>
+      </Assign>
+      <Assign DisplayName="Assign ordered keys based on length" sap:VirtualizedContainerService.HintSize="416,175" sap2010:WorkflowViewState.IdRef="Assign_27">
+        <Assign.To>
+          <OutArgument x:TypeArguments="scg:List(x:String)">[orderedKeys]</OutArgument>
+        </Assign.To>
+        <Assign.Value>
+          <InArgument x:TypeArguments="scg:List(x:String)">[dictValues.Keys.OrderByDescending(Function(k) k.Length).ToList()]</InArgument>
+        </Assign.Value>
+      </Assign>
+      <ui:ForEach x:TypeArguments="x:String" CurrentIndex="{x:Null}" DisplayName="Iterate and replace keys with values in text" sap:VirtualizedContainerService.HintSize="416,57" sap2010:WorkflowViewState.IdRef="ForEach`1_5" Values="[orderedKeys]">
+        <ui:ForEach.Body>
+          <ActivityAction x:TypeArguments="x:String">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="x:String" Name="currentText" />
+            </ActivityAction.Argument>
+            <Sequence DisplayName="Body" sap:VirtualizedContainerService.HintSize="450,592" sap2010:WorkflowViewState.IdRef="Sequence_12">
+              <Sequence.Variables>
+                <Variable x:TypeArguments="x:String" Name="key" />
+                <Variable x:TypeArguments="x:String" Name="val" />
+              </Sequence.Variables>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+              <Assign sap:VirtualizedContainerService.HintSize="416,179" sap2010:WorkflowViewState.IdRef="Assign_28">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:String">[key]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:String">[currentText]</InArgument>
+                </Assign.Value>
+              </Assign>
+              <Assign sap:VirtualizedContainerService.HintSize="416,179" sap2010:WorkflowViewState.IdRef="Assign_29">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:String">[val]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:String">[dictValues(key)]</InArgument>
+                </Assign.Value>
+              </Assign>
+              <Assign sap:VirtualizedContainerService.HintSize="416,170" sap2010:WorkflowViewState.IdRef="Assign_31">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:String">[restoredtext]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:String">[restoredText.Replace(key, val)]</InArgument>
+                </Assign.Value>
+              </Assign>
+            </Sequence>
+          </ActivityAction>
+        </ui:ForEach.Body>
+        <sap:WorkflowViewStateService.ViewState>
+          <scg:Dictionary x:TypeArguments="x:String, x:Object">
+            <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+            <x:Boolean x:Key="IsPinned">False</x:Boolean>
+          </scg:Dictionary>
+        </sap:WorkflowViewStateService.ViewState>
+      </ui:ForEach>
+      <ui:LogMessage DisplayName="Log the restored text" sap:VirtualizedContainerService.HintSize="416,166" sap2010:WorkflowViewState.IdRef="LogMessage_7" Message="[&quot;Texto restaurado: &quot; &amp; restoredtext]" />
     </Sequence>
   </Sequence>
 </Activity>
